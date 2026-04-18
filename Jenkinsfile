@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -22,6 +21,18 @@ pipeline {
         stage('Check Target') {
             steps {
                 bat 'dir target'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t my-java-app .'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                bat 'docker run -d -p 8081:8080 my-java-app'
             }
         }
     }
