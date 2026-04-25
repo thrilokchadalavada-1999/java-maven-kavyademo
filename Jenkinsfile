@@ -2,37 +2,49 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'
+        jdk 'Kavya JDK'
+        maven 'kavyamaven3'
+    }
+
+    environment {
+        DOCKER_HUB = 'kavya1111999'
+        IMAGE_NAME = 'my-java-app'
     }
 
     stages {
-        stage('Build') {
+
+        stage('Checkout') {
             steps {
-                bat 'mvn -version'
+                git branch: 'main', url: 'https://github.com/thrilokchadalavada-1999/java-maven-kavyademo.git'
             }
         }
 
-        stage('Compile') {
+        stage('Build') {
             steps {
                 bat 'mvn clean package'
             }
         }
 
-        stage('Check Target') {
-            steps {
-                bat 'dir target'
-            }
-        }
-
         stage('Docker Build') {
             steps {
-                bat 'docker build -t my-java-app .'
+                bat 'docker build -t %DOCKER_HUB%/%IMAGE_NAME% .'
             }
         }
 
-        stage('Run Container') {
+        stage('Docker Push') {
             steps {
-                bat 'docker run -d -p 8081:8080 my-java-app'
+                withCredentials([usernamePassword(credentialsId: 'docker-kavyacreds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    bat 'echo %PASS% | docker login -u %USER% --password-stdin'
+                    bat 'docker push %DOCKER_HUB%/%IMAGE_NAME%'
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deploy.yaml'
+                bat 'kubectl apply -f service.yaml'
+                bat 'kubectl apply -f kavyaingress.yaml'
             }
         }
     }
