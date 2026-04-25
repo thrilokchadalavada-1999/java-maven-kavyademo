@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Kavya JDK'          // make sure this matches Jenkins config
+        jdk 'kavyaJDK17'          // make sure this matches Jenkins config
         maven 'kavyamaven3'
     }
 
