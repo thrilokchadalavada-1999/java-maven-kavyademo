@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-       
-        DOCKER_IMAGE = "kavya111999/my-java-app:latest"
+        // Docker Hub repo details
+        DOCKER_IMAGE = "kavya1111999/my-java-app:latest"
+        // Path to kubeconfig file (adjust if Jenkins runs under a different account)
         KUBECONFIG = "C:\\Users\\thril\\.kube\\config"
     }
 
