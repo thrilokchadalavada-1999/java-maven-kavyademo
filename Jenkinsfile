@@ -1,63 +1,56 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'KavyaJDK17'
+        maven 'kavyamaven3'
+    }
+
     environment {
-        DOCKER_IMAGE = "kavya111999/my-java-app:latest"
+        DOCKER_IMAGE = 'kavya1111999/my-java-app'
     }
 
     stages {
-        stage('Checkout SCM') {
+
+        stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/thrilokchadalavada-1999/java-maven-kavyademo.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build') {
             steps {
                 bat 'mvn clean package'
             }
         }
 
-        stage('Docker Login') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-kavya1creds',
-                                                 usernameVariable: 'DOCKER_USER',
-                                                 passwordVariable: 'DOCKER_PASS')]) {
-                    bat """
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                    """
-                }
-            }
-        }
-
         stage('Docker Build') {
             steps {
-                bat "docker build -t ${DOCKER_IMAGE} ."
+                bat 'docker build -t %DOCKER_IMAGE% .'
             }
         }
 
         stage('Docker Push') {
             steps {
-                bat "docker push ${DOCKER_IMAGE}"
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-kavya1creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                    echo Logging into Docker...
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    docker push %DOCKER_IMAGE%
+                    '''
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                bat """
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-                """
+                bat 'kubectl apply -f deploy.yaml'
+                bat 'kubectl apply -f service.yaml'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Please check logs.'
         }
     }
 }
