@@ -33,9 +33,12 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-kavyacreds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    bat 'echo %PASS% | docker login -u %USER% --password-stdin'
-                    bat 'docker push %DOCKER_HUB%/%IMAGE_NAME%'
+               withCredentials([usernamePassword(credentialsId: 'docker-kavyacreds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+    bat """
+    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+    docker push kavya1111999/my-java-app
+    """
+}
                 }
             }
         }
