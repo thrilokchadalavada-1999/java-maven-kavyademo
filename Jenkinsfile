@@ -2,23 +2,31 @@ pipeline {
     agent any
 
     environment {
-        // Docker Hub repo details
         DOCKER_IMAGE = "kavya1111999/my-java-app:latest"
-        // Path to kubeconfig file (adjust if Jenkins runs under a different account)
-        KUBECONFIG = "C:\\Users\\thril\\.kube\\config"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/thrilokchadalavada-1999/java-maven-kavyademo.git'
+                checkout scm
             }
         }
 
         stage('Build with Maven') {
             steps {
-                bat "mvn clean package"
+                bat 'mvn clean package'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-kavya1creds',
+                                                 usernameVariable: 'DOCKER_USER',
+                                                 passwordVariable: 'DOCKER_PASS')]) {
+                    bat """
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    """
+                }
             }
         }
 
@@ -30,22 +38,26 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-kavya1creds',
-                                                 usernameVariable: 'DOCKER_USER',
-                                                 passwordVariable: 'DOCKER_PASS')]) {
-                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                    bat "docker push ${DOCKER_IMAGE}"
-                }
+                bat "docker push ${DOCKER_IMAGE}"
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                withEnv(["KUBECONFIG=${KUBECONFIG}"]) {
-                    bat "kubectl apply -f deploy.yaml --validate=false"
-                    bat "kubectl apply -f service.yaml --validate=false"
-                }
+                bat """
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                """
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check logs.'
         }
     }
 }
