@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE = 'kavya1111999/my-java-app'
+        DOCKER_IMAGE = 'kavya111999/my-java-app'
     }
 
     stages {
