@@ -1,14 +1,55 @@
-stage('Docker Push') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'docker-kavya1creds',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            bat '''
-            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-            docker push kavya1111999/my-java-app
-            '''
+pipeline {
+    agent any
+
+    tools {
+        jdk 'KavyaJDK17'
+        maven 'kavyamaven3'
+    }
+
+    environment {
+        DOCKER_IMAGE = 'kavya1111999/my-java-app'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/thrilokchadalavada-1999/java-maven-kavyademo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn clean package'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t %DOCKER_IMAGE% .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-kavya1creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    docker push kavya1111999/my-java-app
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deploy.yaml'
+                bat 'kubectl apply -f service.yaml'
+            }
         }
     }
 }
