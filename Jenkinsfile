@@ -26,7 +26,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t %DOCKER_IMAGE% .'
+                sh 'docker build -t %DOCKER_IMAGE% .'
             }
         }
 
@@ -37,7 +37,7 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat '''
+                    sh '''
                     docker login -u %DOCKER_USER% -p %DOCKER_PASS%
                     docker push %DOCKER_IMAGE%
                     '''
@@ -47,8 +47,8 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl apply -f deploy.yaml'
-                bat 'kubectl apply -f service.yaml'
+                sh 'kubectl apply -f deploy.yaml'
+                sh 'kubectl apply -f service.yaml'
             }
         }
     }
