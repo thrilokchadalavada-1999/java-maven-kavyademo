@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+'''
 tools {
     jdk 'KavyaJDK17'
     maven 'kavyamaven3'
