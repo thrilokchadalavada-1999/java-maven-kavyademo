@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - name: my-java-app
-        image: kavya1111999/my-java-app
+        image: kavya1111999/my-java-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
