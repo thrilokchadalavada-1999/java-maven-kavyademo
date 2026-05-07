@@ -15,6 +15,6 @@ public class DemoApplication {
 
     @GetMapping("/")
     public String home() {
-        return "Hello from Spring Boot 🚀";
+        return "You are part of my existence, part of myself and you are the reason I started this. May god bless you and give you the strength you overcome your hardtimes";
     }
 }
