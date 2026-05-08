@@ -3,7 +3,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "kavya1111999/my-java-app:v7"
+        DOCKER_IMAGE = "kavya1111999/my-java-app:v8"
+        CONTAINER_NAME = "my-java-app"
     }
 
     stages {
@@ -29,6 +30,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
+
                 withCredentials([usernamePassword(
                     credentialsId: 'kavyadockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
@@ -42,5 +44,22 @@ pipeline {
             }
         }
 
+        stage('Deploy Container') {
+            steps {
+
+                sh '''
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
+
+                docker pull $DOCKER_IMAGE
+
+                docker run -d \
+                  --name $CONTAINER_NAME \
+                  --restart unless-stopped \
+                  -p 80:8080 \
+                  $DOCKER_IMAGE
+                '''
+            }
+        }
     }
 }
